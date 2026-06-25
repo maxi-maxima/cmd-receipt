@@ -12,6 +12,7 @@ describe("toMarkdown", () => {
       durationMs: 1000,
       exitCode: 0,
       signal: null,
+      timedOut: false,
       stdoutTail: "1 passed",
       stderrTail: "",
       git: {

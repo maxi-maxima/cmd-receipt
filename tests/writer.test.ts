@@ -16,6 +16,7 @@ describe("writeReceipt", () => {
         durationMs: 1000,
         exitCode: 0,
         signal: null,
+        timedOut: false,
         stdoutTail: "ok",
         stderrTail: ""
       },

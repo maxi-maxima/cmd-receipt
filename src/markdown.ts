@@ -4,14 +4,18 @@ export function toMarkdown(receipt: CommandReceipt): string {
   const lines = [
     "# Command Receipt",
     "",
-    "| Command | Exit code | Duration | Started | Finished |",
-    "| --- | ---: | ---: | --- | --- |",
-    `| \`${escapePipes(receipt.command.join(" "))}\` | ${receipt.exitCode ?? "signal"} | ${receipt.durationMs} ms | ${receipt.startedAt} | ${receipt.finishedAt} |`,
+    "| Command | Exit code | Timed out | Duration | Started | Finished |",
+    "| --- | ---: | --- | ---: | --- | --- |",
+    `| \`${escapePipes(receipt.command.join(" "))}\` | ${receipt.exitCode ?? "signal"} | ${receipt.timedOut ? "yes" : "no"} | ${receipt.durationMs} ms | ${receipt.startedAt} | ${receipt.finishedAt} |`,
     "",
     "## Context",
     "",
     `- CWD: \`${receipt.cwd}\``
   ];
+
+  if (receipt.timeoutMs) {
+    lines.push(`- Timeout: ${receipt.timeoutMs} ms`);
+  }
 
   if (receipt.git) {
     lines.push(`- Git SHA: \`${receipt.git.sha || "unknown"}\``);

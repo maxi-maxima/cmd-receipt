@@ -17,15 +17,20 @@ program
   .description("Run a command and write a receipt. Use -- before the command.")
   .option("--out <dir>", "output directory", "reports/cmd-receipt")
   .option("--tail-bytes <bytes>", "stdout/stderr tail bytes", (value) => Number.parseInt(value, 10), 16_000)
+  .option("--timeout-ms <ms>", "terminate the command after this many milliseconds", parsePositiveInteger)
   .allowUnknownOption(true)
   .argument("[command...]", "command and arguments")
-  .action(async (command: string[], options: { out: string; tailBytes: number }) => {
+  .action(async (command: string[], options: { out: string; tailBytes: number; timeoutMs?: number }) => {
     const normalized = command[0] === "--" ? command.slice(1) : command;
-    const receipt = await runCommand(normalized, { cwd: process.cwd(), tailBytes: options.tailBytes });
+    const receipt = await runCommand(normalized, {
+      cwd: process.cwd(),
+      tailBytes: options.tailBytes,
+      timeoutMs: options.timeoutMs
+    });
     await writeReceipt(receipt, options.out);
     printSummary(receipt);
     console.log(`Reports: ${options.out}`);
-    process.exitCode = receipt.exitCode ?? 1;
+    process.exitCode = receipt.timedOut ? 124 : (receipt.exitCode ?? 1);
   });
 
 program.command("demo").option("--out <dir>", "output directory", "reports/demo").action(async (options: { out: string }) => {
@@ -37,10 +42,19 @@ program.command("demo").option("--out <dir>", "output directory", "reports/demo"
 
 program.parse();
 
+function parsePositiveInteger(value: string): number {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+    throw new Error("Expected a positive integer.");
+  }
+  return parsed;
+}
+
 function printSummary(receipt: CommandReceipt): void {
-  const status = receipt.exitCode === 0 ? pc.green("PASS") : pc.red("FAIL");
+  const status = receipt.timedOut ? pc.yellow("TIMEOUT") : receipt.exitCode === 0 ? pc.green("PASS") : pc.red("FAIL");
   console.log(`Cmd Receipt ${status}`);
   console.log(`Command: ${receipt.command.join(" ")}`);
   console.log(`Exit code: ${receipt.exitCode}`);
+  if (receipt.timeoutMs) console.log(`Timeout: ${receipt.timeoutMs} ms`);
   console.log(`Duration: ${receipt.durationMs} ms`);
 }

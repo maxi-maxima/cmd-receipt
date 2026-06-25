@@ -11,6 +11,7 @@ describe("runCommand", () => {
     expect(receipt.exitCode).toBe(0);
     expect(receipt.stdoutTail).toContain("ok");
     expect(receipt.stderrTail).toContain("warn");
+    expect(receipt.timedOut).toBe(false);
     expect(receipt.durationMs).toBeGreaterThanOrEqual(0);
     expect(receipt.cwd).toBe(process.cwd());
   });
@@ -19,5 +20,16 @@ describe("runCommand", () => {
     const receipt = await runCommand([process.execPath, "-e", "process.exit(7)"], { cwd: process.cwd() });
 
     expect(receipt.exitCode).toBe(7);
+  });
+
+  it("terminates commands that exceed the timeout", async () => {
+    const receipt = await runCommand([process.execPath, "-e", "setTimeout(() => console.log('late'), 500)"], {
+      cwd: process.cwd(),
+      timeoutMs: 50
+    });
+
+    expect(receipt.timedOut).toBe(true);
+    expect(receipt.timeoutMs).toBe(50);
+    expect(receipt.signal).toBe("SIGTERM");
   });
 });

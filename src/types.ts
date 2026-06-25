@@ -6,6 +6,8 @@ export interface CommandReceipt {
   durationMs: number;
   exitCode: number | null;
   signal: NodeJS.Signals | null;
+  timedOut: boolean;
+  timeoutMs?: number;
   stdoutTail: string;
   stderrTail: string;
   git?: {

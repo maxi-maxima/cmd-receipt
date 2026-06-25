@@ -8,6 +8,7 @@ const execFileAsync = promisify(execFile);
 export interface RunOptions {
   cwd: string;
   tailBytes?: number;
+  timeoutMs?: number;
 }
 
 export async function runCommand(command: string[], options: RunOptions): Promise<CommandReceipt> {
@@ -20,31 +21,42 @@ export async function runCommand(command: string[], options: RunOptions): Promis
   const startedMs = Date.now();
   const git = await readGitState(options.cwd);
 
-  const result = await new Promise<Pick<CommandReceipt, "exitCode" | "signal" | "stdoutTail" | "stderrTail">>((resolve, reject) => {
-    const child = spawn(command[0], command.slice(1), {
-      cwd: options.cwd,
-      shell: false,
-      windowsHide: true
-    });
-    let stdout = "";
-    let stderr = "";
-
-    child.stdout?.on("data", (chunk: Buffer) => {
-      stdout = keepTail(stdout + chunk.toString("utf8"), tailBytes);
-    });
-    child.stderr?.on("data", (chunk: Buffer) => {
-      stderr = keepTail(stderr + chunk.toString("utf8"), tailBytes);
-    });
-    child.on("error", reject);
-    child.on("close", (exitCode, signal) => {
-      resolve({
-        exitCode,
-        signal,
-        stdoutTail: stdout,
-        stderrTail: stderr
+  const result = await new Promise<Pick<CommandReceipt, "exitCode" | "signal" | "stdoutTail" | "stderrTail" | "timedOut">>(
+    (resolve, reject) => {
+      const child = spawn(command[0], command.slice(1), {
+        cwd: options.cwd,
+        shell: false,
+        windowsHide: true
       });
-    });
-  });
+      let stdout = "";
+      let stderr = "";
+      let timedOut = false;
+      const timeout = options.timeoutMs
+        ? setTimeout(() => {
+            timedOut = true;
+            child.kill("SIGTERM");
+          }, options.timeoutMs)
+        : undefined;
+
+      child.stdout?.on("data", (chunk: Buffer) => {
+        stdout = keepTail(stdout + chunk.toString("utf8"), tailBytes);
+      });
+      child.stderr?.on("data", (chunk: Buffer) => {
+        stderr = keepTail(stderr + chunk.toString("utf8"), tailBytes);
+      });
+      child.on("error", reject);
+      child.on("close", (exitCode, signal) => {
+        if (timeout) clearTimeout(timeout);
+        resolve({
+          exitCode,
+          signal,
+          stdoutTail: stdout,
+          stderrTail: stderr,
+          timedOut
+        });
+      });
+    }
+  );
 
   const finished = new Date();
   return {
@@ -53,6 +65,7 @@ export async function runCommand(command: string[], options: RunOptions): Promis
     startedAt: started.toISOString(),
     finishedAt: finished.toISOString(),
     durationMs: Math.max(0, Date.now() - startedMs),
+    timeoutMs: options.timeoutMs,
     ...result,
     git
   };
