@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { pathToFileURL } from "node:url";
 import { Command } from "commander";
 import pc from "picocolors";
 import { runCommand } from "./runner.js";
@@ -40,10 +41,19 @@ program.command("demo").option("--out <dir>", "output directory", "reports/demo"
   console.log(`Reports: ${options.out}`);
 });
 
-program.parse();
+if (isCliEntryPoint()) {
+  program.parse();
+}
 
-function parsePositiveInteger(value: string): number {
-  const parsed = Number.parseInt(value, 10);
+function isCliEntryPoint(): boolean {
+  return process.argv[1] ? import.meta.url === pathToFileURL(process.argv[1]).href : false;
+}
+
+export function parsePositiveInteger(value: string): number {
+  if (!/^\d+$/.test(value)) {
+    throw new Error("Expected a positive integer.");
+  }
+  const parsed = Number(value);
   if (!Number.isSafeInteger(parsed) || parsed <= 0) {
     throw new Error("Expected a positive integer.");
   }
