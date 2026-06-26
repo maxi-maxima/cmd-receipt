@@ -18,7 +18,12 @@ describe("writeReceipt", () => {
         signal: null,
         timedOut: false,
         stdoutTail: "ok",
-        stderrTail: ""
+        stderrTail: "",
+        environment: {
+          node: "v20.0.0",
+          platform: "win32",
+          arch: "x64"
+        }
       },
       out
     );

@@ -15,6 +15,12 @@ describe("toMarkdown", () => {
       timedOut: false,
       stdoutTail: "1 passed",
       stderrTail: "",
+      environment: {
+        node: "v20.0.0",
+        platform: "win32",
+        arch: "x64",
+        shell: "bash"
+      },
       git: {
         sha: "abc123",
         branch: "main",
@@ -24,6 +30,8 @@ describe("toMarkdown", () => {
 
     expect(markdown).toContain("# Command Receipt");
     expect(markdown).toContain("npm test");
+    expect(markdown).toContain("v20.0.0");
+    expect(markdown).toContain("win32/x64");
     expect(markdown).toContain("1 passed");
     expect(markdown).toContain("abc123");
   });

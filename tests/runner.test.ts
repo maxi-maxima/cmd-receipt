@@ -14,6 +14,11 @@ describe("runCommand", () => {
     expect(receipt.timedOut).toBe(false);
     expect(receipt.durationMs).toBeGreaterThanOrEqual(0);
     expect(receipt.cwd).toBe(process.cwd());
+    expect(receipt.environment).toMatchObject({
+      node: process.version,
+      platform: process.platform,
+      arch: process.arch
+    });
   });
 
   it("captures failed command exit codes without throwing", async () => {

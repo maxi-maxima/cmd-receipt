@@ -67,7 +67,17 @@ export async function runCommand(command: string[], options: RunOptions): Promis
     durationMs: Math.max(0, Date.now() - startedMs),
     timeoutMs: options.timeoutMs,
     ...result,
+    environment: readEnvironment(),
     git
+  };
+}
+
+function readEnvironment(): CommandReceipt["environment"] {
+  return {
+    node: process.version,
+    platform: process.platform,
+    arch: process.arch,
+    shell: process.env.SHELL || process.env.ComSpec || process.env.COMSPEC
   };
 }
 

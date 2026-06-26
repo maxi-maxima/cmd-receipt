@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add Node.js, platform, architecture, and shell metadata to receipts.
+
 ## 0.1.0
 
 - Initial public release.

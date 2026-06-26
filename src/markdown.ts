@@ -17,6 +17,12 @@ export function toMarkdown(receipt: CommandReceipt): string {
     lines.push(`- Timeout: ${receipt.timeoutMs} ms`);
   }
 
+  lines.push(`- Node: \`${receipt.environment.node}\``);
+  lines.push(`- Platform: \`${receipt.environment.platform}/${receipt.environment.arch}\``);
+  if (receipt.environment.shell) {
+    lines.push(`- Shell: \`${receipt.environment.shell}\``);
+  }
+
   if (receipt.git) {
     lines.push(`- Git SHA: \`${receipt.git.sha || "unknown"}\``);
     lines.push(`- Git branch: \`${receipt.git.branch || "unknown"}\``);

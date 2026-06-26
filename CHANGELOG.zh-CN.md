@@ -1,5 +1,9 @@
 # 变更记录
 
+## Unreleased
+
+- 在 receipt 中新增 Node.js、平台、架构和 shell 元数据。
+
 ## 0.1.0
 
 - 首个公开版本。

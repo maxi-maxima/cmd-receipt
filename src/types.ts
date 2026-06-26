@@ -10,6 +10,12 @@ export interface CommandReceipt {
   timeoutMs?: number;
   stdoutTail: string;
   stderrTail: string;
+  environment: {
+    node: string;
+    platform: NodeJS.Platform;
+    arch: string;
+    shell?: string;
+  };
   git?: {
     sha?: string;
     branch?: string;
