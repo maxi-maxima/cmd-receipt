@@ -17,7 +17,7 @@ program
   .command("run")
   .description("Run a command and write a receipt. Use -- before the command.")
   .option("--out <dir>", "output directory", "reports/cmd-receipt")
-  .option("--tail-bytes <bytes>", "stdout/stderr tail bytes", (value) => Number.parseInt(value, 10), 16_000)
+  .option("--tail-bytes <bytes>", "stdout/stderr tail bytes", parsePositiveInteger, 16_000)
   .option("--timeout-ms <ms>", "terminate the command after this many milliseconds", parsePositiveInteger)
   .allowUnknownOption(true)
   .argument("[command...]", "command and arguments")
