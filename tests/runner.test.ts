@@ -27,6 +27,16 @@ describe("runCommand", () => {
     expect(receipt.exitCode).toBe(7);
   });
 
+  it("keeps a valid UTF-8 tail when the byte limit crosses a multibyte character", async () => {
+    const receipt = await runCommand([process.execPath, "-e", "process.stdout.write('前缀🙂尾')"], {
+      cwd: process.cwd(),
+      tailBytes: 6
+    });
+
+    expect(receipt.stdoutTail).toBe("尾");
+    expect(Buffer.byteLength(receipt.stdoutTail, "utf8")).toBeLessThanOrEqual(6);
+  });
+
   it("terminates commands that exceed the timeout", async () => {
     const receipt = await runCommand([process.execPath, "-e", "setTimeout(() => console.log('late'), 500)"], {
       cwd: process.cwd(),
