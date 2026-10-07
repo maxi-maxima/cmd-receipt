@@ -31,6 +31,8 @@ export async function runCommand(command: string[], options: RunOptions): Promis
       let stdout = "";
       let stderr = "";
       let timedOut = false;
+      child.stdout?.setEncoding("utf8");
+      child.stderr?.setEncoding("utf8");
       const timeout = options.timeoutMs
         ? setTimeout(() => {
             timedOut = true;
@@ -38,11 +40,11 @@ export async function runCommand(command: string[], options: RunOptions): Promis
           }, options.timeoutMs)
         : undefined;
 
-      child.stdout?.on("data", (chunk: Buffer) => {
-        stdout = keepTail(stdout + chunk.toString("utf8"), tailBytes);
+      child.stdout?.on("data", (chunk: string) => {
+        stdout = keepTail(stdout + chunk, tailBytes);
       });
-      child.stderr?.on("data", (chunk: Buffer) => {
-        stderr = keepTail(stderr + chunk.toString("utf8"), tailBytes);
+      child.stderr?.on("data", (chunk: string) => {
+        stderr = keepTail(stderr + chunk, tailBytes);
       });
       child.on("error", reject);
       child.on("close", (exitCode, signal) => {
@@ -86,7 +88,11 @@ function keepTail(value: string, maxBytes: number): string {
   if (buffer.byteLength <= maxBytes) {
     return value;
   }
-  return buffer.subarray(buffer.byteLength - maxBytes).toString("utf8");
+  let start = buffer.byteLength - maxBytes;
+  while (start < buffer.byteLength && (buffer[start] & 0xc0) === 0x80) {
+    start += 1;
+  }
+  return buffer.subarray(start).toString("utf8");
 }
 
 async function readGitState(cwd: string): Promise<CommandReceipt["git"] | undefined> {
