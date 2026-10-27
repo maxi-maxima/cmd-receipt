@@ -27,6 +27,16 @@ describe("runCommand", () => {
     expect(receipt.exitCode).toBe(7);
   });
 
+  it("captures commands that cannot be started without throwing", async () => {
+    const command = "definitely-not-a-real-command-codex";
+    const receipt = await runCommand([command], { cwd: process.cwd() });
+
+    expect(receipt.exitCode).toBeNull();
+    expect(receipt.signal).toBeNull();
+    expect(receipt.stderrTail).toContain(command);
+    expect(receipt.timedOut).toBe(false);
+  });
+
   it("keeps a valid UTF-8 tail when the byte limit crosses a multibyte character", async () => {
     const receipt = await runCommand([process.execPath, "-e", "process.stdout.write('前缀🙂尾')"], {
       cwd: process.cwd(),

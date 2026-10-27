@@ -22,7 +22,7 @@ export async function runCommand(command: string[], options: RunOptions): Promis
   const git = await readGitState(options.cwd);
 
   const result = await new Promise<Pick<CommandReceipt, "exitCode" | "signal" | "stdoutTail" | "stderrTail" | "timedOut">>(
-    (resolve, reject) => {
+    (resolve) => {
       const child = spawn(command[0], command.slice(1), {
         cwd: options.cwd,
         shell: false,
@@ -31,6 +31,7 @@ export async function runCommand(command: string[], options: RunOptions): Promis
       let stdout = "";
       let stderr = "";
       let timedOut = false;
+      let spawnFailed = false;
       child.stdout?.setEncoding("utf8");
       child.stderr?.setEncoding("utf8");
       const timeout = options.timeoutMs
@@ -46,12 +47,15 @@ export async function runCommand(command: string[], options: RunOptions): Promis
       child.stderr?.on("data", (chunk: string) => {
         stderr = keepTail(stderr + chunk, tailBytes);
       });
-      child.on("error", reject);
+      child.on("error", (error) => {
+        spawnFailed ||= child.pid === undefined;
+        stderr = keepTail(`${stderr}${stderr ? "\n" : ""}${error.message}`, tailBytes);
+      });
       child.on("close", (exitCode, signal) => {
         if (timeout) clearTimeout(timeout);
         resolve({
-          exitCode,
-          signal,
+          exitCode: spawnFailed ? null : exitCode,
+          signal: spawnFailed ? null : signal,
           stdoutTail: stdout,
           stderrTail: stderr,
           timedOut

@@ -1,12 +1,13 @@
 import type { CommandReceipt } from "./types.js";
 
 export function toMarkdown(receipt: CommandReceipt): string {
+  const outcome = receipt.exitCode ?? receipt.signal ?? "not started";
   const lines = [
     "# Command Receipt",
     "",
     "| Command | Exit code | Timed out | Duration | Started | Finished |",
     "| --- | ---: | --- | ---: | --- | --- |",
-    `| \`${escapePipes(receipt.command.join(" "))}\` | ${receipt.exitCode ?? "signal"} | ${receipt.timedOut ? "yes" : "no"} | ${receipt.durationMs} ms | ${receipt.startedAt} | ${receipt.finishedAt} |`,
+    `| \`${escapePipes(receipt.command.join(" "))}\` | ${outcome} | ${receipt.timedOut ? "yes" : "no"} | ${receipt.durationMs} ms | ${receipt.startedAt} | ${receipt.finishedAt} |`,
     "",
     "## Context",
     "",

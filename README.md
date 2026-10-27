@@ -47,6 +47,7 @@ npx github:maxi-maxima/cmd-receipt run --out reports/verify -- npm run check
 ```
 
 The CLI exits with the wrapped command's exit code, so it can be used in CI.
+If the command cannot be started, it still writes both receipts with the launch error and exits with status 1.
 
 ## Output
 

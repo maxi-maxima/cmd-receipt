@@ -62,9 +62,10 @@ export function parsePositiveInteger(value: string): number {
 
 function printSummary(receipt: CommandReceipt): void {
   const status = receipt.timedOut ? pc.yellow("TIMEOUT") : receipt.exitCode === 0 ? pc.green("PASS") : pc.red("FAIL");
+  const outcome = receipt.exitCode ?? receipt.signal ?? "not started";
   console.log(`Cmd Receipt ${status}`);
   console.log(`Command: ${receipt.command.join(" ")}`);
-  console.log(`Exit code: ${receipt.exitCode}`);
+  console.log(`Exit code: ${outcome}`);
   if (receipt.timeoutMs) console.log(`Timeout: ${receipt.timeoutMs} ms`);
   console.log(`Duration: ${receipt.durationMs} ms`);
 }

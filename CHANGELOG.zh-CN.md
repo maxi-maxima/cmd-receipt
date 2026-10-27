@@ -3,6 +3,8 @@
 ## Unreleased
 
 - 在 receipt 中新增 Node.js、平台、架构和 shell 元数据。
+- 命令无法启动时也写出 receipt，不再以未捕获错误提前退出。
+- 移除未使用的 Zod 运行时依赖。
 
 ## 0.1.0
 

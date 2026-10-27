@@ -47,6 +47,7 @@ npx github:maxi-maxima/cmd-receipt run --out reports/verify -- npm run check
 ```
 
 CLI 会使用被包装命令的 exit code，因此可以放进 CI。
+如果命令无法启动，CLI 仍会把启动错误写入两份 receipt，并以状态码 1 退出。
 
 ## 输出
 
